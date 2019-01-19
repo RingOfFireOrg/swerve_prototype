@@ -1,11 +1,13 @@
 package org.usfirst.frc.team3459.robot;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.CameraServer;
 
 
 /**
@@ -27,9 +29,9 @@ public class Robot extends TimedRobot {
 	JoystickButton blButton = new JoystickButton(commandStick, 3);
 	JoystickButton trigger = new JoystickButton(commandStick, 1);
 	JoystickButton stop = new JoystickButton(commandStick, 2);
+	private DoubleSolenoid pusher = new DoubleSolenoid(0,1);
 	boolean buttonCycle = false;
 	
-	PneumaticPiston pneumatics = new PneumaticPiston();
 	
 	SwerveDrive swerveDrive = new SwerveDrive();
 //	AHRS ahrs;
@@ -42,7 +44,11 @@ public class Robot extends TimedRobot {
 	public void robotInit() {
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
+
 		SmartDashboard.putData("Auto choices", chooser);
+
+		CameraServer.getInstance().startAutomaticCapture();
+
 		try {
 //			ahrs = new AHRS(SerialPort.Port.kUSB1);
 		} catch (RuntimeException ex) {
@@ -90,6 +96,7 @@ public class Robot extends TimedRobot {
 	/**
 	 * This function is called periodically during operator control
 	 */
+
 	@Override
 	public void teleopPeriodic() {
 		double twist;
@@ -110,19 +117,15 @@ public class Robot extends TimedRobot {
 //				swerveDrive.syncroDrive(speed, direction, twist);	
 
 	if(buttonCycle && trigger.get()) {
-		if(pneumatics.pusherOut()){
-			System.out.println("Got trigger");
-				pneumatics.in();
-				System.out.println("Pushing in");
+		if(pusher.get() == DoubleSolenoid.Value.kReverse) {
+			pusher.set(DoubleSolenoid.Value.kForward);
 		} else {
-			pneumatics.out();
-			System.out.println("Pushing out");
+			pusher.set(DoubleSolenoid.Value.kReverse);
 		}
 		buttonCycle = false;
 	}
 
 	if (trigger.get() == false) {
-		System.out.println("Trigger is false");
 		buttonCycle = true;
 	}
 }
@@ -130,9 +133,9 @@ public class Robot extends TimedRobot {
 	/**
 	 * This function is called periodically during test mode
 	 */
+
 	@Override
 	public void testPeriodic() {
 		swerveDrive.individualModuleControl(frButton.get(), flButton.get(), brButton.get(), blButton.get());
-		
 	}
 }
