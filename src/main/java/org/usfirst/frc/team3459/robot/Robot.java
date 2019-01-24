@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.CameraServer;
-
+import edu.wpi.first.wpilibj.Talon;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -29,6 +29,8 @@ public class Robot extends TimedRobot {
 	JoystickButton blButton = new JoystickButton(commandStick, 3);
 	JoystickButton trigger = new JoystickButton(commandStick, 1);
 	JoystickButton stop = new JoystickButton(commandStick, 2);
+	JoystickButton liftyBoy = new JoystickButton(commandStick, 7);
+	
 	private DoubleSolenoid pusher = new DoubleSolenoid(0,1);
 	boolean buttonCycle = false;
 	
@@ -127,6 +129,28 @@ public class Robot extends TimedRobot {
 
 	if (trigger.get() == false) {
 		buttonCycle = true;
+	}
+
+	if(buttonCycle && upDown.get()) {
+		//sim spins forward
+	} else {
+		//sim spins backwards
+	}
+
+	if(upDown.get() == false) {
+		buttonCycle = true;
+
+	}
+
+	boolean upPressed = manipulatorStick.getRawButton(RobotMap.LIFT_UP_BUTTON);
+	boolean downPressed = manipulatorStick.getRawButton(RobotMap.LIFT_DOWN_BUTTON);	
+
+	if (upPressed) {
+		lifter.up();
+	} else if (downPressed) {
+		lifter.down();
+	} else {
+		lifter.stop();
 	}
 }
 
