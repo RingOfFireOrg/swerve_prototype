@@ -7,8 +7,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.Talon;
+//import edu.wpi.first.wpilibj.CameraServer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -22,6 +21,7 @@ public class Robot extends TimedRobot {
 	final String customAuto = "My Auto";
 	String autoSelected;
 	Joystick commandStick = new Joystick(0);
+	Joystick manipulatorStick = new Joystick(1);
 	SendableChooser<String> chooser = new SendableChooser<>();
 	JoystickButton frButton = new JoystickButton(commandStick, 6);
 	JoystickButton flButton = new JoystickButton(commandStick, 5);
@@ -29,10 +29,11 @@ public class Robot extends TimedRobot {
 	JoystickButton blButton = new JoystickButton(commandStick, 3);
 	JoystickButton trigger = new JoystickButton(commandStick, 1);
 	JoystickButton stop = new JoystickButton(commandStick, 2);
-	JoystickButton liftyBoy = new JoystickButton(commandStick, 7);
+	JoystickButton liftyBoy = new JoystickButton(manipulatorStick, 1);
 	
 	private DoubleSolenoid pusher = new DoubleSolenoid(0,1);
 	boolean buttonCycle = false;
+	Prototype_CAN bigFact;
 	
 	
 	SwerveDrive swerveDrive = new SwerveDrive();
@@ -49,13 +50,15 @@ public class Robot extends TimedRobot {
 
 		SmartDashboard.putData("Auto choices", chooser);
 
-		CameraServer.getInstance().startAutomaticCapture();
+		//CameraServer.getInstance().startAutomaticCapture();
 
 		try {
 //			ahrs = new AHRS(SerialPort.Port.kUSB1);
 		} catch (RuntimeException ex) {
 			DriverStation.reportError("Error instantiating navX MXP:  " + ex.getMessage(), true);
 		}
+
+		bigFact = new Prototype_CAN(8, 0.25);
 
 //		ahrs.reset();
 	}
@@ -131,27 +134,18 @@ public class Robot extends TimedRobot {
 		buttonCycle = true;
 	}
 
-	if(buttonCycle && upDown.get()) {
-		//sim spins forward
-	} else {
-		//sim spins backwards
-	}
+	double yPos = manipulatorStick.getY();
 
-	if(upDown.get() == false) {
-		buttonCycle = true;
-
-	}
-
-	boolean upPressed = manipulatorStick.getRawButton(RobotMap.LIFT_UP_BUTTON);
-	boolean downPressed = manipulatorStick.getRawButton(RobotMap.LIFT_DOWN_BUTTON);	
-
-	if (upPressed) {
-		lifter.up();
-	} else if (downPressed) {
-		lifter.down();
-	} else {
-		lifter.stop();
-	}
+	// The 0.25 and -0.25 are so that the joystick doesn't have to be perfectly
+    // centered to stop
+    if (yPos > 0.25) {
+		bigFact.forward();
+	  } else if (yPos < -0.25) {
+		bigFact.reverse();
+	  } else {
+		bigFact.stop();
+	  }
+	
 }
 
 	/**
